@@ -1,0 +1,12 @@
+-   id: check-rust
+    name: Check Rust
+    description: Check Rust files for fmt and clippy errors
+    entry: check-rust
+    language: python
+    stages: [push, manual]
+-   id: custom-pre-push
+    name: Custom Pre Push
+    description: Runs Code through pre-commit again, and checks rust code
+    entry: check-rust
+    language: python
+    stages: [push, manual]
