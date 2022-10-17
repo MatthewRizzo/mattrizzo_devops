@@ -8,11 +8,17 @@ Because you want a portable way to manage you git environment.
 
 ## Install
 
-All you need to do is run `sudo bootstrap.sh`.
+Run `sudo bootstrap.sh`.
 
-If you are just using the hooks, the python environment) will get
-installed for you (assuming you have poetry). If you don't, the boostrap
-will take care of that for you.
+Add to your `pyproject.toml` (or create a new one) the dependency of this repo.
+A full example, please see [pyproject.toml.example](pyproject.toml.example).
+The briefest example can be seen below:
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.10"
+mattrizzo-devops = {git = "https://github.com/MatthewRizzo/mattrizzo_devops"}
+```
 
 ## Adding the Python Type Checking
 

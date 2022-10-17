@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "Your Name"
+version = "0.1.0"
+description = "Dev Ops Made Porablt!!"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+mattrizzo-devops = {git = "https://github.com/MatthewRizzo/mattrizzo_devops"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
