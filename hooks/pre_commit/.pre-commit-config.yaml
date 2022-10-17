@@ -27,13 +27,18 @@ repos:
         entry: poetry run check-rust
         language: system
         stages: [push]
-    - id: pylint
-      name: pylint
-      entry: poetry run pylint
-      language: system
-      types: [python]
-      args:
-        [
-          "-rn",
-          "-sn",
-        ]
+    -   id: pylint
+        name: pylint
+        entry: poetry run pylint
+        language: system
+        types: [python]
+        args:
+          [
+            "-rn",
+            "-sn",
+          ]
+    -   id: mypy
+        name: Python Typing - mypy
+        entry: poetry run mypy -p hooks
+        language: system
+        types: [python]

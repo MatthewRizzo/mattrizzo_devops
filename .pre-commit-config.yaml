@@ -39,6 +39,6 @@ repos:
           ]
     -   id: mypy
         name: Python Typing - mypy
-        entry: poetry run mypy
+        entry: poetry run mypy -p hooks
         language: system
         types: [python]
