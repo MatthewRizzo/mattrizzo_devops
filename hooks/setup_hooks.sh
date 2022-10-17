@@ -48,16 +48,8 @@ function setup_pre_commit() {
 function setup_pre_push(){
     local -r repo_top_dir="$1"
 
-    # TODO: make this part work
-    # pre-commit install --hook-type pre-push
+    (cd ${repo_top_dir} && pre-commit install --hook-type pre-push)
 
-    # Prepair for pre-push too
-    local -r repo_git_dir="${repo_top_dir}/.git"
-    local -r repo_pre_push="${repo_git_dir}/hooks/pre-push"
-    if [[ -f ${repo_pre_push} ]]; then
-        rm ${repo_pre_push}
-    fi
-    print_cmd ln -s ${gists_location}/git/hooks/pre_push/pre-push.sh ${repo_pre_push}
 }
 
 function setup_cloned_repo() {
