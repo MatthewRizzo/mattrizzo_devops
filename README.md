@@ -8,10 +8,10 @@ Because you want a portable way to manage you git environment.
 
 ## Install
 
-Run `sudo bootstrap.sh`.
+Run `sudo ./bootstrap.sh`.
 
-Add to your `pyproject.toml` (or create a new one) the dependency of this repo.
-A full example, please see [pyproject.toml.example](pyproject.toml.example).
+Add to your `pyproject.toml` (or create a new one) this repo as a dependency.
+For a full example, please see [pyproject.toml.example](pyproject.toml.example).
 The briefest example can be seen below:
 
 ```toml
@@ -35,8 +35,6 @@ This can be easily done, as is in this repository's
 
 ## TODO
 
-* Get the install of pre-push hooks through
-    [setup_hooks.sh](hooks/pre_push/README.md) to work.
-* Move all non-system dependencies into the proper dependency file
-  * i.e. take poetry version out of [bootstrap.sh](bootstrap.sh)
-* Add a python typing hook
+* Add a hook that acts as a boostrap
+  * curl's the bootstrap script
+  * tells the user to run it as sudo
