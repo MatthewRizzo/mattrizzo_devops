@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
 # Script responsible for setting up hooks in a given respository
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-GISTS_TOP_DIR="$(cd ${SCRIPTPATH} && git rev-parse --show-toplevel 2> /dev/null)"
+SCRIPTPATH=""
+if [[ "$0" == *"/usr/bin"* ]]; then
+    # Script is being sourced
+    SCRIPTPATH="$( cd -- "$(dirname "${BASH_SOURCE}")" >/dev/null 2>&1 ; pwd -P )"
+else
+    # Script is being executed
+    SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+fi
+DEVOPS_TOP_DIR="$(cd ${SCRIPTPATH} && git rev-parse --show-toplevel 2> /dev/null)"
 
 function copy_pre_commit_config() {
     local cwd=""
@@ -72,7 +79,7 @@ function setup_cloned_repo() {
 }
 
 function run_bootstrap() {
-    (cd "${GISTS_TOP_DIR}/git" && ./bootstrap.sh)
+    (cd "${DEVOPS_TOP_DIR}" && ./bootstrap.sh)
 }
 
 function main() {

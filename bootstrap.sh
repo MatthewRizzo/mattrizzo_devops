@@ -13,8 +13,12 @@ readonly RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
 function check_if_sudo(){
     local -r pkg_to_install=$1
     if [ "$EUID" -ne 0 ]; then
-        echo "Missing dependency: ${pkg_to_install}."
-        echo -e "\nThe bootstrap script MUST be run as root to install it."
+        if [[ "${pkg_to_install}" != "" ]]; then
+            echo "Missing dependency: ${pkg_to_install}."
+            echo -e "\nThe bootstrap script MUST be run as root to install it."
+        else
+            echo -e "\nThe bootstrap script MUST be run as root."
+        fi
         echo -e "Please run sudo ${SCRIPTPATH}\n"
         exit
     fi
@@ -172,6 +176,8 @@ function create_venv() {
 }
 
 function main() {
+    check_if_sudo
+    
     local pkg_manager=""
     if [ -x "$(command -v apt)" ]; then pkg_manager="apt"
     elif [ -x "$(command -v dnf)" ];     then pkg_manager="dnf"
