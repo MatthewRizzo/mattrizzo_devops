@@ -9,6 +9,13 @@ readonly REPO_TOP_DIR="$(realpath ${SCRIPT_DIR_PATH})"
 readonly ORIGINAL_USER=${SUDO_USER}
 readonly RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
 
+declare -a DEPENDECY_LIST=(
+    ruby
+    gh
+    pre-commit=2.17.0-1
+
+)
+
 # $1 = The package to install (if it isn't already)
 function check_if_sudo(){
     local -r pkg_to_install=$1
@@ -93,7 +100,6 @@ function install_mdl(){
 
 function install_poetry()
 {
-    # TODO: move this to a file
     local -r expected_poetry_version="1.2.2"
 
     # Release sudo for this to work -> become user again
@@ -151,15 +157,9 @@ function install_rust_deps() {
 function check_dependencies() {
     local -r pkg_manager=$1
     local -r dependencies_file="${REPO_TOP_DIR}/dependencies.txt"
+    local -r dependencies=
 
-    cat ${dependencies_file} | while read pkg version
-    do
-        install_pkg ${pkg} ${version} ${pkg_manager}
-
-        if [[ "${pkg}" == "gh" ]]; then
-            echo "Please run: gh auth login"
-        fi
-    done
+    sudo ${pkg_manager} install -y "${DEPENDECY_LIST[@]}"
 
     install_rust_deps
     install_python_dep
@@ -169,9 +169,6 @@ function check_dependencies() {
 }
 
 function create_venv() {
-#    python -m poetry install
-    # local -r poetry_path="$HOME/.local/bin/poetry"
-
     run_cmd_as_user "python -m poetry install"
 }
 
