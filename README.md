@@ -20,6 +20,14 @@ python = "^3.10"
 mattrizzo-devops = {git = "https://github.com/MatthewRizzo/mattrizzo_devops"}
 ```
 
+## Hook Template
+
+Once you have run `bootstrap.sh`, you'd want to actually start using hooks.
+For an example set of templates see the example
+[hooks/pre_commit/.pre-commit-config.yaml](hooks/pre_commit/.pre-commit-config.yaml).
+
+Feel free to copy it into your repositories!
+
 ## Adding the Python Type Checking
 
 This can be easily done, as is in this repository's
