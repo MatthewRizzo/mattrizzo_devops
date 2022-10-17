@@ -13,6 +13,15 @@ repos:
     -   id: pretty-format-json
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
+-   repo: https://github.com/MatthewRizzo/mattrizzo_devops
+    rev: 0.1.0
+    hooks:
+    -   id: check-rust
+        name: Check Rust
+        description: Check Rust files for fmt and clippy errors
+        entry: poetry run check-rust
+        language: system
+        stages: [push]
 -   repo: local
     hooks:
     -   id: markdown-linter
@@ -21,12 +30,6 @@ repos:
         language: ruby
         files: \.(md|mdown|markdown)$
         stages: [commit]
-    -   id: check-rust
-        name: Check Rust
-        description: Check Rust files for fmt and clippy errors
-        entry: poetry run check-rust
-        language: system
-        stages: [push]
     -   id: pylint
         name: pylint
         entry: poetry run pylint
