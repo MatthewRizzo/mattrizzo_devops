@@ -8,7 +8,18 @@ Because you want a portable way to manage you git environment.
 
 ## Install
 
-Run `sudo ./bootstrap.sh`.
+```bash
+
+curl -SL https://raw.githubusercontent.com/MatthewRizzo/mattrizzo_devops/main/bootstrap.sh | sudo bash
+
+```
+
+This is the equivalent of cloning this repository and running the
+[bootstrap.sh](bootstrap.sh) script with `sudo ./bootstrap.sh`.
+
+### Setting Up the pyproject
+
+This is needed in order to setup the virtual environment for pre-commit hooks.
 
 Add to your `pyproject.toml` (or create a new one) this repo as a dependency.
 For a full example, please see [pyproject.toml.example](pyproject.toml.example).
@@ -19,6 +30,36 @@ The briefest example can be seen below:
 python = "^3.10"
 mattrizzo-devops = {git = "https://github.com/MatthewRizzo/mattrizzo_devops"}
 ```
+
+### Setup Utility
+
+To properly setup the hooks, every time you clone a new repository, you'd have
+to
+
+1. Re-run `bootstrap.sh --no-root` to see if there are any updates.
+2. Run `pre-commit install --hook-type pre-commit --hook-type pre-push`.
+
+This is tedious and repetitive. The perfect usecase of a devops repo!!
+
+To you `.bashrc` (or similar file type), add the following function:
+
+```bash
+# Used to alias clone and auto-setup any cloned repo
+function git(){
+    if [[ $1 == "clone" ]]; then
+        # The last arg to clone must be the name
+        local -r raw_cloned_dir_name="${@: -1}"
+        local -r cloned_dir_name="$(echo ${raw_cloned_dir_name} | cut -d '/' -f2 | cut -d '.' -f1)"
+        command git "$@" && (cd ${cloned_dir_name} && pre-commit install --hook-type pre-commit --hook-type pre-push);
+    else
+        command git "$@";
+    fi;
+}
+```
+
+There is a better version of this, but that requires having cloned this
+repository and pathing to [setup_hooks.sh](hooks/setup_hooks.sh) instead.
+That is part of [todo](#todo).
 
 ## Hook Template
 
@@ -34,6 +75,8 @@ This can be easily done, as is in this repository's
 [.pre-commit-config.yaml](.pre-commit-config.yaml).
 
 ```yaml
+-   repo: local
+    hooks:
     -   id: mypy
         name: Python Typing - mypy
         entry: poetry run mypy -p # <package name defined by pyproject.toml>
@@ -41,8 +84,28 @@ This can be easily done, as is in this repository's
         types: [python]
 ```
 
+## Adding the markdown linter
+
+```yaml
+-   repo: local
+    hooks:
+    -   id: markdown-linter
+        name: markdown-linter
+        entry: mdl -s .mdl_ruleset.rb
+        language: ruby
+        files: \.(md|mdown|markdown)$
+        stages: [commit]
+```
+
+Define `.mdl_ruleset.rb` at the top level of your repository as follows:
+
+```ruby
+all
+rule 'MD013', :ignore_code_blocks => true
+# Any other rules you want to customize
+# See https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md
+```
+
 ## TODO
 
-* Add a hook that acts as a boostrap
-   * curl's the bootstrap script
-   * tells the user to run it as sudo
+* Refactor `setup_hooks.sh` so a curl command would work like bootsrap.
