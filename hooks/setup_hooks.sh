@@ -48,7 +48,7 @@ function copy_pre_commit_config() {
 function setup_pre_commit() {
     local -r repo_top_dir="$1"
     copy_pre_commit_config ${repo_top_dir}
-    pre-commit install
+    (cd ${repo_top_dir} && pre-commit install --hook-type pre-commit)
 }
 
 # $1 = top level dir of repo
@@ -79,7 +79,9 @@ function setup_cloned_repo() {
 }
 
 function run_bootstrap() {
-    (cd "${DEVOPS_TOP_DIR}" && ./bootstrap.sh)
+    # Run with no-sudo to make sure sudo will NEVER be required for a command
+    # Prevents weird control flow for end-users when cloning a respository
+    (cd "${DEVOPS_TOP_DIR}" && ./bootstrap.sh --no-sudo)
 }
 
 function main() {

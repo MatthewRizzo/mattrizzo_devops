@@ -44,8 +44,5 @@ This can be easily done, as is in this repository's
 ## TODO
 
 * Add a hook that acts as a boostrap
-  * curl's the bootstrap script
-  * tells the user to run it as sudo
-* Make flag for bootstrap allowing `poetry install` to be done without sudo
-  * change `setup_hooks.sh` so `run_bootstrap()` uses the non-sudo flags
-  * don't want it failing every time a repo is cloned
+   * curl's the bootstrap script
+   * tells the user to run it as sudo
