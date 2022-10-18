@@ -171,7 +171,7 @@ function install_python_dep() {
     local -r user=$2
     install_poetry ${sudo_allowed}
 
-    local -r setup_poetry_config="python -m poetry config --ansi virtualenvs.in-project true"
+    local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${setup_poetry_config}"
     else
