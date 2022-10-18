@@ -188,7 +188,7 @@ function install_rust_deps() {
         # https://doc.rust-lang.org/cargo/getting-started/installation.html
         local -r rustup_url="https://sh.rustup.rs"
         echo "Installing Rust ${rustup_url}"
-        # curl ${rustup_url} -sSf | sh
+        curl ${rustup_url} -sSf | sh
         source "$HOME/.cargo/env"
     fi
 }
