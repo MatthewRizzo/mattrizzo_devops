@@ -29,6 +29,7 @@ The briefest example can be seen below:
 [tool.poetry.dependencies]
 python = "^3.10"
 mattrizzo-devops = {git = "https://github.com/MatthewRizzo/mattrizzo_devops"}
+poetry = "1.2.2"
 ```
 
 ### Setup Utility
@@ -109,3 +110,4 @@ rule 'MD013', :ignore_code_blocks => true
 ## TODO
 
 * Refactor `setup_hooks.sh` so a curl command would work like bootsrap.
+* Add hook / program to fail a tag if it is > "version" in `pyproject.toml`
