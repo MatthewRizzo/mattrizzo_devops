@@ -10,7 +10,6 @@ repos:
     -   id: end-of-file-fixer
     -   id: file-contents-sorter
     -   id: name-tests-test
-    -   id: pretty-format-json
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
 -   repo: local
