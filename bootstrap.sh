@@ -58,7 +58,8 @@ function check_if_sudo(){
 function run_cmd_as_user(){
     local -r command_to_run="$1"
 
-    echo "${command_to_run}"
+    echo "Short Command: ${command_to_run}"
+    echo "Full Command: ${RUN_PREFIX}='${command_to_run}'"
     ${RUN_PREFIX}="${command_to_run}"
 }
 
@@ -173,7 +174,7 @@ function install_python_dep() {
 
     local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
     if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "${setup_poetry_config}"
+        run_cmd_as_user "python -m ${setup_poetry_config}"
     else
         ${setup_poetry_config}
     fi
@@ -222,9 +223,9 @@ function check_dependencies() {
 # $2 = sudo_allowed. true = sudoer. false = regular user.
 function create_venv() {
     local -r sudo_allowed=$1
-    create_poetry_venv_cmd="python -m poetry install"
+    create_poetry_venv_cmd="poetry install"
     if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "${create_poetry_venv_cmd}"
+        run_cmd_as_user "python -m ${create_poetry_venv_cmd}"
     else
         ${create_poetry_venv_cmd}
     fi

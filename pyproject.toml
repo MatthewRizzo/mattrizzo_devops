@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "mattrizzo_devops"
-version = "1.0.1"
+version = "1.0.2"
 description = "Repository containing all things related to CI and devops for any code I develop"
 authors = ["Matt Rizzo <mattrizzo21@gmail.com>"]
 license = "MIT License"
