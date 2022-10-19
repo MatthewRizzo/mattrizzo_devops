@@ -111,3 +111,18 @@ rule 'MD013', :ignore_code_blocks => true
 
 * Refactor `setup_hooks.sh` so a curl command would work like bootsrap.
 * Add hook / program to fail a tag if it is > "version" in `pyproject.toml`
+* Refine check_rust to use the `Makefile.toml` if it exists at top level of a repo
+
+```bash
+function check_rust(){
+    local return_code=""
+    if [[ ! -f ${repo_top_dir}/Makefile.toml ]]; then
+        ${gists_location}/git/hooks/pre_push.d/check-rust.py --cwd ${repo_top_dir}
+        return_code=$?
+    else
+        cargo make all
+    fi
+    return ${return_code}
+}
+```
+
