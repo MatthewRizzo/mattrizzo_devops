@@ -180,7 +180,28 @@ function install_python_dep() {
     fi
 }
 
+# Adding Rust (Cargo) to path is necessary for it to work
+# Check if the path is already added, if not, add an source for it in
+# ~/.bashrc
+# $1 = user
+function add_rust_to_path() {
+    local -r user=$1
+local -r cmd_to_print=$(cat <<END_HEREDOC
+
+if [[ -f "/home/$user/.cargo/env" ]]; then
+    source "/home/$user/.cargo/env"
+fi
+END_HEREDOC
+)
+if ! grep -q -w ".cargo/env" /home/$user/.bashrc; then
+    echo "Adding cargo to path"
+    echo "$cmd_to_print" >> /home/${user}/.bashrc
+fi
+}
+
+# $1 = user
 function install_rust_deps() {
+    local -r user=$1
     if [[ -f "$HOME/.cargo/env" ]]; then
         source "$HOME/.cargo/env"
     fi
@@ -189,9 +210,10 @@ function install_rust_deps() {
         # https://doc.rust-lang.org/cargo/getting-started/installation.html
         local -r rustup_url="https://sh.rustup.rs"
         echo "Installing Rust ${rustup_url}"
-        curl ${rustup_url} -sSf | sh
-        source "$HOME/.cargo/env"
+        curl ${rustup_url} -sSf | sh -s -- -y
     fi
+    add_rust_to_path ${user}
+    source "${HOME}/.cargo/env"
 }
 
 # $1 = pkg_manager - the pkg manager of the system
@@ -216,7 +238,7 @@ function check_dependencies() {
         user=${SUDO_USER}
     fi
 
-    install_rust_deps
+    install_rust_deps ${user}
     install_python_dep ${sudo_allowed} ${user}
 }
 
