@@ -126,3 +126,4 @@ function check_rust(){
 }
 ```
 * Fix installer to rustup -> make it non interactive
+* Add to bootstrap -> add sourcing cargo to bashrc if it doesnt exist already `. "${HOME}/.cargo/env"`
