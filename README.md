@@ -125,4 +125,4 @@ function check_rust(){
     return ${return_code}
 }
 ```
-
+* Fix installer to rustup -> make it non interactive
