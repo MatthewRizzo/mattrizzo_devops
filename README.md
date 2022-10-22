@@ -129,3 +129,4 @@ function check_rust(){
 * Add to bootstrap -> add sourcing cargo to bashrc if it doesnt exist already `. "${HOME}/.cargo/env"`
 * Bootstrap add check for poetry -> make sure python 3.10 is installed. If not try to install it.
   * Have script specifically install poetry using python3.10   
+* Add export of path to poetry bin to path (similar to cargo)
