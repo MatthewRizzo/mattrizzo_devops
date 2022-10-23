@@ -125,8 +125,3 @@ function check_rust(){
     return ${return_code}
 }
 ```
-
-* Bootstrap add check for poetry -> make sure python 3.10 is installed.
-  * If not try to install it.
-  * Have script specifically install poetry using python3.10
-* Add export of path to poetry bin to path (similar to cargo)

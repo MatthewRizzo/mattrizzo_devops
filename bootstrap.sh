@@ -9,12 +9,14 @@ readonly REPO_TOP_DIR="$(realpath ${SCRIPT_DIR_PATH})"
 readonly ORIGINAL_USER=${SUDO_USER}
 readonly RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
 
+readonly PYTHON_VERSION="3.10"
+
 # Don't make a dependency file because I want this script to be self-contained
 declare -a DEPENDECY_LIST=(
     ruby
     gh
     pre-commit=2.17.0-1
-
+    python${PYTHON_VERSION}
 )
 
 function usage {
@@ -55,11 +57,15 @@ function check_if_sudo(){
 # Using the runuser command, it is possible to run commands at the user
 #   level again.
 # $1 = command_to_run
+# $2 = verbose. Set to true for more details. Defaults to not being verbose.
 function run_cmd_as_user(){
     local -r command_to_run="$1"
+    local -r verbose="$2"
 
-    echo "Short Command: ${command_to_run}"
-    echo "Full Command: ${RUN_PREFIX}='${command_to_run}'"
+    echo "${command_to_run}"
+    if [[ ${verbose} == true ]]; then
+        echo "Full Command: ${RUN_PREFIX}='${command_to_run}'"
+    fi
     ${RUN_PREFIX}="${command_to_run}"
 }
 
@@ -117,6 +123,53 @@ function install_mdl(){
 
 }
 
+# $1 = sudo allowed
+function install_python() {
+    local -r sudo_allowed=$1
+    local -r curl_cmd="curl -sSL https://bootstrap.pypa.io/get-pip.py"
+    local -r install_script_cmd="python3.10"
+    local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
+    if [[ ${sudo_allowed} == true ]]; then
+        run_cmd_as_user "${install_cmd}"
+    else
+        echo "${curl_cmd} | ${install_script_cmd}"
+        ${curl_cmd} | ${install_script_cmd}
+    fi
+}
+
+# Check's if a python3.10 is installed. Installs it if it isn't
+# $1 = sudo_allowed
+function check_python_version(){
+    local -r sudo_allowed=$1
+    if ! command -v python${PYTHON_VERSION} > /dev/null; then
+        echo "python${PYTHON_VERSION} not installed. Installing it!"
+    fi
+    install_python ${sudo_allowed}
+}
+
+# Pass the abs path to add to PATH
+# $1 = abs path to add to path
+# $2 = user
+function add_to_PATH {
+    local -r user=$2
+    case ":$PATH:" in
+        *":$1:"*) :;; # already there
+        # or PATH="$PATH:$1"
+        *)
+            echo "PATH='$1:$PATH'" >> /home/${user}/.bashrc
+            ;;
+    esac
+}
+
+# Adding pip to path is necessary for it to work
+# Check if the path is already added, if not, add an source for it in
+# ~/.bashrc
+# $1 = user
+function add_pip_to_path() {
+    local -r user=$1
+    add_to_PATH "/home/${user}/.local/bin/" ${user}
+}
+
 # $1 = sudo_allowed. true = sudoer. false = regular user.
 # $2 = user - the name of the actual user
 # Return - The current poetry version (if it is installed)
@@ -134,7 +187,7 @@ function get_current_poetry_version() {
 
 
     if [[ ${sudo_allowed} == true ]]; then
-        raw_actual_poetry_version=$(run_cmd_as_user "${get_poetry_version_cmd}")
+        raw_actual_poetry_version=$(run_cmd_as_user "${get_poetry_version_cmd}" true)
     else
         raw_actual_poetry_version=$(${get_poetry_version_cmd})
     fi
@@ -143,6 +196,15 @@ function get_current_poetry_version() {
     local actual_poetry_version="$(echo ${raw_actual_poetry_version} | sed -e  's/.*(version\(.*\)*./\1/' )"
     actual_poetry_version="$(echo ${actual_poetry_version} | tr -d ' \t\n\r ' )"
     echo "${actual_poetry_version}"
+}
+
+# Adding poetry to path is necessary for it to work
+# Check if the path is already added, if not, add an source for it in
+# ~/.bashrc
+# $1 = user
+function add_poetry_to_path() {
+    local -r user=$1
+    add_to_PATH "/home/${user}/.local/bin/poetry" ${user}
 }
 
 # $1 = sudo_allowed. true = sudoer. false = regular user.
@@ -155,13 +217,15 @@ function install_poetry()
 
     # https://python-poetry.org/docs/
     local -r curl_cmd="curl -sSL https://install.python-poetry.org"
-    local -r install_script_cmd="python3 - --version ${expected_poetry_version}"
+    local -r install_script_cmd="python3.10 - --version ${expected_poetry_version}"
     local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${install_cmd}"
     else
         ${curl_cmd} | ${install_script_cmd}
     fi
+
+    add_poetry_to_path ${user}
 }
 
 # Some python packages must be installed via pip
@@ -170,7 +234,9 @@ function install_poetry()
 function install_python_dep() {
     local -r sudo_allowed=$1
     local -r user=$2
-    install_poetry ${sudo_allowed}
+    check_python_version ${sudo_allowed}
+
+    install_poetry ${sudo_allowed} ${user}
 
     local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
     if [[ ${sudo_allowed} == true ]]; then
