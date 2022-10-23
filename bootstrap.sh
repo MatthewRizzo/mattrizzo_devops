@@ -147,28 +147,26 @@ function check_python_version(){
     install_python ${sudo_allowed}
 }
 
-# Pass the abs path to add to PATH
-# $1 = abs path to add to path
-# $2 = user
-function add_to_PATH {
-    local -r user=$2
-    case ":$PATH:" in
-        *":$1:"*) :;; # already there
-        # or PATH="$PATH:$1"
-        *)
-            echo "PATH='$1:$PATH'" >> /home/${user}/.bashrc
-            ;;
-    esac
-}
-
-# Adding pip to path is necessary for it to work
+# Adding pip and poetry to path is necessary for it to work
 # Check if the path is already added, if not, add an source for it in
 # ~/.bashrc
 # $1 = user
-function add_pip_to_path() {
+function add_local_to_path() {
     local -r user=$1
-    add_to_PATH "/home/${user}/.local/bin/" ${user}
+    local -r path_to_add="/home/${user}/.local/bin/"
+local -r cmd_to_print=$(cat <<END_HEREDOC
+
+PATH="\$PATH:$path_to_add"
+END_HEREDOC
+)
+
+    if ! echo "$PATH" | /bin/grep -Eq "(^|:)${path_to_add}($|:)" ; then
+        echo "Adding ${path_to_add} to path"
+        echo "$cmd_to_print" >> /home/${user}/.bashrc
+        source /home/${user}/.bashrc
+    fi
 }
+
 
 # $1 = sudo_allowed. true = sudoer. false = regular user.
 # $2 = user - the name of the actual user
@@ -198,15 +196,6 @@ function get_current_poetry_version() {
     echo "${actual_poetry_version}"
 }
 
-# Adding poetry to path is necessary for it to work
-# Check if the path is already added, if not, add an source for it in
-# ~/.bashrc
-# $1 = user
-function add_poetry_to_path() {
-    local -r user=$1
-    add_to_PATH "/home/${user}/.local/bin/poetry" ${user}
-}
-
 # $1 = sudo_allowed. true = sudoer. false = regular user.
 # $2 = user - the name of the actual user
 function install_poetry()
@@ -216,16 +205,14 @@ function install_poetry()
     local -r expected_poetry_version="1.2.2"
 
     # https://python-poetry.org/docs/
-    local -r curl_cmd="curl -sSL https://install.python-poetry.org"
-    local -r install_script_cmd="python3.10 - --version ${expected_poetry_version}"
-    local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
+    local -r install_cmd="${PYTHON} -m pip install --user poetry==1.2.2"
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${install_cmd}"
     else
         ${curl_cmd} | ${install_script_cmd}
     fi
 
-    add_poetry_to_path ${user}
+    add_local_to_path ${user}
 }
 
 # Some python packages must be installed via pip
@@ -239,6 +226,7 @@ function install_python_dep() {
     install_poetry ${sudo_allowed} ${user}
 
     local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
+    add_local_to_path ${user}
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "python -m ${setup_poetry_config}"
     else
