@@ -10,6 +10,7 @@ readonly ORIGINAL_USER=${SUDO_USER}
 readonly RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
 
 readonly PYTHON_VERSION="3.10"
+readonly PYTHON="python${PYTHON_VERSION}"
 
 # Don't make a dependency file because I want this script to be self-contained
 declare -a DEPENDECY_LIST=(
@@ -126,14 +127,17 @@ function install_mdl(){
 # $1 = sudo allowed
 function install_python() {
     local -r sudo_allowed=$1
-    local -r curl_cmd="curl -sSL https://bootstrap.pypa.io/get-pip.py"
-    local -r install_script_cmd="python3.10"
-    local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
-    if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "${install_cmd}"
-    else
-        echo "${curl_cmd} | ${install_script_cmd}"
-        ${curl_cmd} | ${install_script_cmd}
+    if [[ $(command -v ${PYTHON} &> /dev/null) == 1 ]]; then
+        echo "python not installed"
+        local -r curl_cmd="curl -sSL https://bootstrap.pypa.io/get-pip.py"
+        local -r install_script_cmd="python3.10"
+        local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
+        if [[ ${sudo_allowed} == true ]]; then
+            run_cmd_as_user "${install_cmd}"
+        else
+            echo "${curl_cmd} | ${install_script_cmd}"
+            ${curl_cmd} | ${install_script_cmd}
+        fi
     fi
 }
 
@@ -141,8 +145,8 @@ function install_python() {
 # $1 = sudo_allowed
 function check_python_version(){
     local -r sudo_allowed=$1
-    if ! command -v python${PYTHON_VERSION} > /dev/null; then
-        echo "python${PYTHON_VERSION} not installed. Installing it!"
+    if ! command -v ${PYTHON} > /dev/null; then
+        echo "${PYTHON} not installed. Installing it!"
     fi
     install_python ${sudo_allowed}
 }
@@ -177,7 +181,7 @@ function get_current_poetry_version() {
     local -r sudo_allowed=$1
     local -r user=$2
     local -r expected_poetry_loc="/home/${user}/.local/bin/poetry"
-    local -r get_poetry_version_cmd="python -m poetry --version --no-ansi"
+    local -r get_poetry_version_cmd="${PYTHON} -m poetry --version --no-ansi"
     local raw_actual_poetry_version=""
 
     if [[ ! -f ${expected_poetry_loc} ]]; then
@@ -217,7 +221,7 @@ function install_poetry()
 
     # https://python-poetry.org/docs/
     local -r curl_cmd="curl -sSL https://install.python-poetry.org"
-    local -r install_script_cmd="python3.10 - --version ${expected_poetry_version}"
+    local -r install_script_cmd="${PYTHON} - --version ${expected_poetry_version}"
     local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${install_cmd}"
@@ -240,7 +244,7 @@ function install_python_dep() {
 
     local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
     if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "python -m ${setup_poetry_config}"
+        run_cmd_as_user "${PYTHON} -m ${setup_poetry_config}"
     else
         ${setup_poetry_config}
     fi
@@ -313,7 +317,7 @@ function create_venv() {
     local -r sudo_allowed=$1
     create_poetry_venv_cmd="poetry install"
     if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "python -m ${create_poetry_venv_cmd}"
+        run_cmd_as_user "${PYTHON} -m ${create_poetry_venv_cmd}"
     else
         ${create_poetry_venv_cmd}
     fi

@@ -111,6 +111,7 @@ rule 'MD013', :ignore_code_blocks => true
 
 * Refactor `setup_hooks.sh` so a curl command would work like bootsrap.
 * Add hook / program to fail a tag if it is > "version" in `pyproject.toml`
+  * `update_about`
 * Refine check_rust to use the `Makefile.toml` if it exists at top level of a repo
 
 ```bash

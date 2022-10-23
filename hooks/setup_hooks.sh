@@ -25,7 +25,7 @@ function copy_pre_commit_config() {
     fi
 
     local -r default_config_name=".pre-commit-config.yaml"
-    local -r gists_config_dir="${gists_location}/git/hooks/pre_commit"
+    local -r devops_config_dir="${DEVOPS_TOP_DIR}/hooks/pre_commit"
     local -r repo_top_dir="$(git rev-parse --show-toplevel)"
     local -r repo_git_dir="${repo_top_dir}/.git"
     local -r repo_exlude_file="${repo_git_dir}/info/exclude"
@@ -37,7 +37,7 @@ function copy_pre_commit_config() {
     else
         new_config_full_path=${repo_top_dir}/${default_config_name}
         echo "abs_path_new_config_file = ${new_config_full_path}"
-        cp ${gists_config_dir}/${default_config_name} ${new_config_full_path}
+        cp ${devops_config_dir}/${default_config_name} ${new_config_full_path}
 
         # Add this new file to the excludes for the repo
         echo -e "\n${abs_path_new_config_file}" >> ${repo_exlude_file}
@@ -79,9 +79,10 @@ function setup_cloned_repo() {
 }
 
 function run_bootstrap() {
+    local -r bootstrap="curl -SL https://raw.githubusercontent.com/MatthewRizzo/mattrizzo_devops/main/bootstrap.sh | bash -- --no-sudo"
     # Run with no-sudo to make sure sudo will NEVER be required for a command
     # Prevents weird control flow for end-users when cloning a respository
-    (cd "${DEVOPS_TOP_DIR}" && ./bootstrap.sh --no-sudo)
+    (cd "${DEVOPS_TOP_DIR}" && ${bootstrap})
 }
 
 function main() {
