@@ -32,7 +32,7 @@ mattrizzo-devops = {git = "https://github.com/MatthewRizzo/mattrizzo_devops"}
 poetry = "1.2.2"
 ```
 
-### Setup Utility
+## Setup Utility
 
 To properly setup the hooks, every time you clone a new repository, you'd have
 to
@@ -42,25 +42,35 @@ to
 
 This is tedious and repetitive. The perfect usecase of a devops repo!!
 
-To you `.bashrc` (or similar file type), add the following function:
+You can curl and run the [setup_hooks.sh](hooks/setup_hooks.sh) script like so:
 
 ```bash
+curl -sSL https://raw.githubusercontent.com/MatthewRizzo/mattrizzo_devops/main/hooks/setup_hooks.sh | bash
+```
+
+### Automating this setup
+
+Everytime a new repository is cloned, it will automatically get setup
+as a correctly configured dev-ops-controlled repo.
+
+To your `.bashrc` (or similar file type), add the following function:
+
+```bash
+
 # Used to alias clone and auto-setup any cloned repo
 function git(){
+    local -r setup_cloned_repo="curl -sSL https://raw.githubusercontent.com/MatthewRizzo/mattrizzo_devops/main/hooks/setup_hooks.sh | bash"
     if [[ $1 == "clone" ]]; then
         # The last arg to clone must be the name
         local -r raw_cloned_dir_name="${@: -1}"
         local -r cloned_dir_name="$(echo ${raw_cloned_dir_name} | cut -d '/' -f2 | cut -d '.' -f1)"
-        command git "$@" && (cd ${cloned_dir_name} && pre-commit install --hook-type pre-commit --hook-type pre-push);
+        command git "$@" && (cd ${cloned_dir_name} && ${setup_cloned_repo});
     else
         command git "$@";
     fi;
 }
+export -f git
 ```
-
-There is a better version of this, but that requires having cloned this
-repository and pathing to [setup_hooks.sh](hooks/setup_hooks.sh) instead.
-That is part of [todo](#todo).
 
 ## Hook Template
 
@@ -109,7 +119,6 @@ rule 'MD013', :ignore_code_blocks => true
 
 ## TODO
 
-* Refactor `setup_hooks.sh` so a curl command would work like bootsrap.
 * Add hook / program to fail a tag if it is > "version" in `pyproject.toml`
   * `update_about`
 * Refine check_rust to use the `Makefile.toml` if it exists at top level of a repo
