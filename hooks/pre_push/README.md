@@ -4,7 +4,7 @@ This directory implements all the executables relating to the `pre-push` hook.
 
 ## Pre-Push Bash Script
 
-This script is symbolically linked to EVERY cloned repository. DO NOT put
+This script is symbolically used by every cloned repository. DO NOT put
 it in a bad state.
 
 This bash script implements the actual hook that will get triggered by every
