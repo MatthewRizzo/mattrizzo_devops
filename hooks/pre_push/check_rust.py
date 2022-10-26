@@ -28,12 +28,11 @@ def is_rust_installed(is_verbose: bool) -> bool:
         )
         if cargo_res == FAILURE_CODE:
             return False
+        return True
     except CalledProcessError as err:
         if is_verbose:
             print(f"Running cargo failed with:\n{err}")
         return False
-
-    return False
 
 def check_rust() -> int:
     """Uses Clippy and cargo fmt to make sure all Rust code is up to standard"""
@@ -59,10 +58,10 @@ def check_rust() -> int:
         return SUCCESS_CODE
 
     if not is_rust_installed(args.verbose):
-        err_msg="Rustup and cargo must be installed to run this hook.\n"
-        err_msg+="Please download"
-        err_msg+="https://github.com/MatthewRizzo/mattrizzo_devops/blob/main/bootstrap.sh"
-        err_msg+="\nThen run sudo ./boostrap.sh"
+        url = "https://raw.githubusercontent.com/MatthewRizzo/mattrizzo_devops/main/bootstrap.sh"
+        err_msg = "Rustup and cargo must be installed to run this hook.\n"
+        err_msg += "Please run:\n"
+        err_msg += f"curl -SL {url} | sudo bash"
         print(err_msg)
         return FAILURE_CODE
 
@@ -101,5 +100,7 @@ def check_rust() -> int:
 def main():
     """Entry to script"""
     res = check_rust()
-    print(f"res = {res}")
     raise SystemExit(res)
+
+if __name__ == "__main__":
+    main()
