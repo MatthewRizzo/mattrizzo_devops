@@ -4,3 +4,9 @@
     entry: poetry run check-rust
     language: python
     stages: [push, manual]
+-   id: mypy
+    name: Python Typing - mypy
+    description: Check Python files for typing errors with mypy
+    entry: poetry run check-python-typing
+    language: system
+    types: [python]
