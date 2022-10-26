@@ -35,9 +35,9 @@ def check_rust() -> int:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-d", "--cwd",
-        help='Path to dir with Cargo.toml',
+        help='Path to dir with Cargo.toml. Relative to root directory of repository.',
         type=Path,
-        default=get_repo_top_dir())
+        default=None)
     parser.add_argument("-v", "--verbose",
         help='Set to make verbose',
         action="store_true",
@@ -45,9 +45,15 @@ def check_rust() -> int:
 
     # Git push also gives a bunch of other args we don't want
     args, _unknown_args = parser.parse_known_args()
+    repo_root_dir = get_repo_top_dir()
 
     # Only run if cargo file is here
-    path_to_cargo = args.cwd / "Cargo.toml"
+    if args.cwd is not None:
+        path_to_cargo_dir = repo_root_dir / args.cwd
+    else:
+        path_to_cargo_dir = repo_root_dir
+
+    path_to_cargo = path_to_cargo_dir / "Cargo.toml"
     if not os.path.exists(path_to_cargo):
         if args.verbose:
             print("Rust - Skipped! No Cargo.toml file here.")
@@ -70,7 +76,7 @@ def check_rust() -> int:
         fmt_res = check_output(
             ["cargo",  "fmt"],
             stderr=STDOUT,
-            cwd=args.cwd,
+            cwd=path_to_cargo_dir,
             encoding='utf-8'
         )
         if fmt_res == constants.FAILURE_CODE:
@@ -84,7 +90,7 @@ def check_rust() -> int:
 
     try:
         _clippy_res = subprocess.check_output(
-            ["cargo",  "clippy"],stderr=STDOUT, cwd=args.cwd
+            ["cargo",  "clippy"],stderr=STDOUT, cwd=path_to_cargo_dir
         ).decode('UTF-8').strip()
     except CalledProcessError as err:
         print(f"Failure! {err.output}")
