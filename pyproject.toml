@@ -11,6 +11,7 @@ packages = [{include = "hooks"}]
 
 [tool.poetry.scripts]
 check-rust = "hooks.pre_push.check_rust:main"
+check-python-typing = "hooks.pre_push.run_mypy:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"

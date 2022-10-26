@@ -7,16 +7,12 @@ import subprocess
 from subprocess import check_output, STDOUT, CalledProcessError
 import os
 from pathlib import Path
-from git import Repo
 
-SUCCESS_CODE = 0
-FAILURE_CODE = 1
+from hooks.pre_push import constants
+from hooks.pre_push.pre_push_utils import get_repo_top_dir
 
-def get_repo_top_dir() -> Path:
-    """Retrieves the path to the top-level directory of the repository"""
-    git_repo = Repo(os.getcwd(), search_parent_directories=True)
-    git_root = git_repo.git.rev_parse("--show-toplevel")
-    return Path(git_root)
+constants.SUCCESS_CODE = 0
+constants.FAILURE_CODE = 1
 
 def is_rust_installed(is_verbose: bool) -> bool:
     """Return's true if rustup and cargo are installed. False otherwise"""
@@ -26,7 +22,7 @@ def is_rust_installed(is_verbose: bool) -> bool:
             stderr=STDOUT,
             encoding='utf-8'
         )
-        if cargo_res == FAILURE_CODE:
+        if cargo_res == constants.FAILURE_CODE:
             return False
         return True
     except CalledProcessError as err:
@@ -55,7 +51,7 @@ def check_rust() -> int:
     if not os.path.exists(path_to_cargo):
         if args.verbose:
             print("Rust - Skipped! No Cargo.toml file here.")
-        return SUCCESS_CODE
+        return constants.SUCCESS_CODE
 
     if not is_rust_installed(args.verbose):
         url = "https://raw.githubusercontent.com/MatthewRizzo/mattrizzo_devops/main/bootstrap.sh"
@@ -63,7 +59,7 @@ def check_rust() -> int:
         err_msg += "Please run:\n"
         err_msg += f"curl -SL {url} | sudo bash"
         print(err_msg)
-        return FAILURE_CODE
+        return constants.FAILURE_CODE
 
     # Force the flush because newline is removed and this is called by bash script
     verbose_msg = "Running Rust linters..................................................."
@@ -77,14 +73,14 @@ def check_rust() -> int:
             cwd=args.cwd,
             encoding='utf-8'
         )
-        if fmt_res == FAILURE_CODE:
+        if fmt_res == constants.FAILURE_CODE:
             if args.verbose:
                 print("Failure! Cargo fmt made some changes! ")
-            return FAILURE_CODE
+            return constants.FAILURE_CODE
     except CalledProcessError as err:
         print("Failure!")
         print(err.output)
-        return FAILURE_CODE
+        return constants.FAILURE_CODE
 
     try:
         _clippy_res = subprocess.check_output(
@@ -92,10 +88,10 @@ def check_rust() -> int:
         ).decode('UTF-8').strip()
     except CalledProcessError as err:
         print(f"Failure! {err.output}")
-        return FAILURE_CODE
+        return constants.FAILURE_CODE
 
     print("Success!")
-    return SUCCESS_CODE
+    return constants.SUCCESS_CODE
 
 def main():
     """Entry to script"""

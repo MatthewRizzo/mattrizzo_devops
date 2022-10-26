@@ -13,7 +13,7 @@ repos:
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
 -   repo: https://github.com/MatthewRizzo/mattrizzo_devops
-    rev: 1.1.0
+    rev: 1.2.0
     hooks:
     -   id: check-rust
         name: Check Rust
@@ -41,7 +41,6 @@ repos:
           ]
     -   id: mypy
         name: Python Typing - mypy
-        entry: poetry run mypy $PWD/hooks
+        entry: poetry run check-python-typing
         language: system
         types: [python]
-        stages: [push]
