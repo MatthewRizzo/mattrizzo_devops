@@ -38,6 +38,7 @@ repos:
           ]
     -   id: mypy
         name: Python Typing - mypy
-        entry: poetry run mypy -p hooks
+        entry: poetry run mypy $PWD/hooks
         language: system
         types: [python]
+        stages: [push]
