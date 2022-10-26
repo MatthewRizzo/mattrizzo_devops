@@ -90,7 +90,8 @@ def check_rust() -> int:
         print(f"Failure! {err.output}")
         return constants.FAILURE_CODE
 
-    print("Success!")
+    if args.verbose:
+        print("Success!")
     return constants.SUCCESS_CODE
 
 def main():
