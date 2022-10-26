@@ -80,6 +80,19 @@ For an example set of templates see the example
 
 Feel free to copy it into your repositories!
 
+## Adding the Rust Checker
+
+Add the following to your [.pre-commit-config.yaml](.pre-commit-config.yaml):
+
+```yaml
+    -   id: check-rust
+        name: Check Rust
+        description: Check Rust files for fmt and clippy errors
+        entry: poetry run check-rust -d #<path to the directory with your binary Cargo.toml>
+        language: system
+        stages: [push]
+```
+
 ## Adding the Python Type Checking
 
 This can be easily done, as is in this repository's
