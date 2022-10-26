@@ -90,7 +90,7 @@ This can be easily done, as is in this repository's
     hooks:
     -   id: mypy
         name: Python Typing - mypy
-        entry: poetry run mypy -p $PWD/# <package name defined by pyproject.toml>
+        entry: poetry run check-python-typing # <package name defined by pyproject.toml>
         language: system
         types: [python]
 ```

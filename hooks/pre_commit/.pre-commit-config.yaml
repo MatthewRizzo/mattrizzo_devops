@@ -41,6 +41,6 @@ repos:
           ]
     -   id: mypy
         name: Python Typing - mypy
-        entry: poetry run check-python-typing
+        entry: poetry run check-python-typing -p # [<you-module-here> <module 2>]
         language: system
         types: [python]
