@@ -85,7 +85,7 @@ def check_rust() -> int:
             return constants.FAILURE_CODE
     except CalledProcessError as err:
         print("Failure!")
-        print(err.output)
+        print(err.output.decode('utf-8'))
         return constants.FAILURE_CODE
 
     try:
@@ -93,7 +93,7 @@ def check_rust() -> int:
             ["cargo",  "clippy"],stderr=STDOUT, cwd=path_to_cargo_dir
         ).decode('UTF-8').strip()
     except CalledProcessError as err:
-        print(f"Failure! {err.output}")
+        print(f"Failure! {err.output.decode('utf-8')}")
         return constants.FAILURE_CODE
 
     if args.verbose:
