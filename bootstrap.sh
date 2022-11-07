@@ -18,6 +18,7 @@ declare -a DEPENDECY_LIST=(
     gh
     pre-commit=2.17.0-1
     python${PYTHON_VERSION}
+    keychain
 )
 
 function usage {
