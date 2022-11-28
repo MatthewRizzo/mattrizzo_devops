@@ -209,12 +209,14 @@ function install_poetry()
     local -r user=$2
     local -r expected_poetry_version="1.2.2"
 
+    curl_cmd="curl -sSL https://install.python-poetry.org | python3 -"
+
     # https://python-poetry.org/docs/
     local -r install_cmd="${PYTHON} -m pip install --user poetry==1.2.2"
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${install_cmd}"
     else
-        ${curl_cmd} | ${install_script_cmd}
+        ${install_cmd}
     fi
 
     add_local_to_path ${user}
