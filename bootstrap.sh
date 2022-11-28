@@ -164,7 +164,6 @@ local -r cmd_to_print=$(cat <<END_HEREDOC
 PATH="\$PATH:$path_to_add"
 END_HEREDOC
 )
-
     if ! echo "$PATH" | /bin/grep -Eq "(^|:)${path_to_add}($|:)" ; then
         echo "Adding ${path_to_add} to path"
         echo "$cmd_to_print" >> /home/${user}/.bashrc
@@ -209,17 +208,22 @@ function install_poetry()
     local -r user=$2
     local -r expected_poetry_version="1.2.2"
 
-    curl_cmd="curl -sSL https://install.python-poetry.org | python3 -"
+    curl_cmd="curl -sSL https://install.python-poetry.org"
+    install_script_cmd="${PYTHON} - --version 1.2.2"
 
     # https://python-poetry.org/docs/
-    local -r install_cmd="${PYTHON} -m pip install --user poetry==1.2.2"
+    # local -r install_cmd="${PYTHON} -m pip install --user poetry==1.2.2"
+    local -r install_cmd="${curl_cmd} | ${install_script_cmd}"
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${install_cmd}"
     else
-        ${install_cmd}
-    fi
+        echo "${curl_cmd} | bash -c \"${install_script_cmd}\""
+        ${curl_cmd} | bash -c "${install_script_cmd}"
 
-    add_local_to_path ${user}
+        if ! command poetry &> /dev/null; then
+            add_local_to_path ${user}
+        fi
+    fi
 }
 
 # Some python packages must be installed via pip
@@ -233,11 +237,16 @@ function install_python_dep() {
     install_poetry ${sudo_allowed} ${user}
 
     local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
-    add_local_to_path ${user}
     if [[ ${sudo_allowed} == true ]]; then
         run_cmd_as_user "${PYTHON} -m ${setup_poetry_config}"
+        # Sudo shouldnt be adding to a user's path
+        echo -e "\n-----------------------------------------"
+        echo "Make sure to add poetry to the local path. "
+        echo "Or rerun ./bootstrap --no-sudo"
+        echo -e "-----------------------------------------\n"
     else
         ${setup_poetry_config}
+        add_local_to_path ${user}
     fi
 }
 
