@@ -12,6 +12,11 @@ repos:
     -   id: name-tests-test
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
+-   repo: https://github.com/ambv/black
+    rev: 22.10.0
+    hooks:
+    - id: black
+      language_version: python3.10
 -   repo: local
     hooks:
     -   id: markdown-linter
