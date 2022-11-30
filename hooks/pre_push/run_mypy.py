@@ -12,14 +12,12 @@ from hooks.pre_push.pre_push_utils import get_repo_top_dir
 constants.SUCCESS_CODE = 0
 constants.FAILURE_CODE = 1
 
+
 def run_mypy(module: str, repo_top_dir: Path, is_verbose: bool) -> int:
     """Runs mypy on the given module and returns if it succeeded or not"""
     try:
         mypy_res = check_output(
-            ["mypy", "-p", module],
-            stderr=STDOUT,
-            cwd=repo_top_dir,
-            encoding='utf-8'
+            ["mypy", "-p", module], stderr=STDOUT, cwd=repo_top_dir, encoding="utf-8"
         )
         print(mypy_res)
         if mypy_res == constants.FAILURE_CODE:
@@ -32,34 +30,35 @@ def run_mypy(module: str, repo_top_dir: Path, is_verbose: bool) -> int:
         print(err.output)
         return constants.FAILURE_CODE
 
+
 def check_mypy() -> int:
     """Uses CLI args to run mypy on all given modules"""
     parser = argparse.ArgumentParser()
 
     repo_top_dir = get_repo_top_dir()
-    parser.add_argument("-v", "--verbose",
-        help='Set to make verbose',
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Set to make verbose",
         action="store_true",
-        default=False)
-    parser.add_argument("-m", "--modules",
-        help='The modules to run through mypy. Space seprated list',
-        default=[],
-        type=str,
-        nargs='+')
+        default=False,
+    )
+    parser.add_argument(
+        "-p", "--package", help="The package to run through mypy", type=str, default=""
+    )
 
     # Git push also gives a bunch of other args we don't want
     args, _unknown_args = parser.parse_known_args()
 
-    if args.modules == []:
+    if args.package == "":
         if args.verbose:
-            print("No modules given with '-m | --modules'. Skipping this check")
+            print("No package given with '-p | --packages'. Skipping this check")
         return constants.SUCCESS_CODE
 
-    overall_res = 1
-    for module in args.modules:
-        overall_res &= run_mypy(module, repo_top_dir, args.verbose)
+    overall_res = constants.SUCCESS_CODE
+    overall_res &= run_mypy(args.package, repo_top_dir, args.verbose)
 
-    if overall_res:
+    if overall_res == constants.SUCCESS_CODE:
         return constants.SUCCESS_CODE
     return constants.FAILURE_CODE
 
@@ -68,6 +67,7 @@ def main():
     """Entry to script"""
     res = check_mypy()
     raise SystemExit(res)
+
 
 if __name__ == "__main__":
     main()
