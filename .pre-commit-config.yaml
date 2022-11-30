@@ -43,6 +43,6 @@ repos:
           ]
     -   id: mypy
         name: Python Typing - mypy
-        entry: poetry run check-python-typing
+        entry: poetry run check-python-typing -p hooks
         language: system
         types: [python]
