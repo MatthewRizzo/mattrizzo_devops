@@ -100,11 +100,12 @@ This can be easily done, as is in this repository's
 
 ```yaml
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.982  # Use the sha / tag you want to point at
+    rev: v0.991
     hooks:
     -   id: mypy
         args: [--no-strict-optional, --ignore-missing-imports]
-        additional_dependencies: [tokenize-rt==3.2.0]
+        # Add dependencies here if their type stubs are needed
+        additional_dependencies: []
 ```
 
 ## Adding the markdown linter
