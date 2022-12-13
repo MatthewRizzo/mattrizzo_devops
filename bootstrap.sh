@@ -16,6 +16,7 @@ readonly PYTHON="python${PYTHON_VERSION}"
 declare -a DEPENDECY_LIST=(
     ruby
     gh
+    gem
     pre-commit=2.17.0-1
     python${PYTHON_VERSION}
     keychain
