@@ -5,21 +5,23 @@ readonly SCRIPT_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 readonly SCRIPTPATH="${SCRIPT_DIR_PATH}/bootstrap.sh"
 readonly REPO_TOP_DIR="$(realpath ${SCRIPT_DIR_PATH})"
 
-# Sudo related constants
-readonly ORIGINAL_USER=${SUDO_USER}
-readonly RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
+# Set in main
+RUN_PREFIX=""
+SUDO_USER=""
 
 readonly PYTHON_VERSION="3.10"
 readonly PYTHON="python${PYTHON_VERSION}"
 
 # Don't make a dependency file because I want this script to be self-contained
 declare -a DEPENDECY_LIST=(
+    software-properties-common
     ruby
     gh
     gem
     pre-commit=2.17.0-1
     python${PYTHON_VERSION}
     keychain
+    python3.10 # MUST be AFTER software-properties
 )
 
 function usage {
@@ -27,11 +29,13 @@ function usage {
 $(basename "${0}"): Bootstraps the devops environment
 General: sudo ./$(basename "${0}") [Optional]
     This is how you should run the script unless you are installing JUST --no-sudo.
+Run Sudo Bootstrap: ./$(basename "${0}" --sudo-user=<username>
 Setup pre-commit: ./$(basename "${0}") --no-sudo
 
 Required Args:
     None
 Optional Args:
+    --sudo-user: REQUIRED IF SUDO. This is the name of the user ELEVATED to sudo.
     --no-sudo: Set this flag if you are setting up pre-commit.
         You are guaranteeing NO command requiring sudo will be executed.
     -h | --help: Print this message
@@ -298,6 +302,7 @@ function check_dependencies() {
 
     if [[ ${sudo_allowed} == true ]]; then
         check_if_sudo
+        sudo add-apt-repository ppa:deadsnakes/ppa --yes
         sudo ${pkg_manager} install -y "${DEPENDECY_LIST[@]}"
 
         # Need Ruby package manager to get mdl - markdown linter
@@ -340,6 +345,10 @@ function main() {
                 sudo_allowed="false"
                 shift
                 ;;
+            "--sudo-user="* )
+                SUDO_USER="${arg#*=}"
+                shift
+                ;;
             * )
                 echo -e >&2 "Unexpected argument: ${arg}\n";
                 usage
@@ -347,6 +356,16 @@ function main() {
                 ;;
         esac
     done
+
+    # MUST get set here
+    # Sudo related constants
+    ORIGINAL_USER=${SUDO_USER}
+    RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
+
+    if [[ $sudo_allowed == true && "$ORIGINAL_USER" == "" ]]; then
+        echo "The --sudo-user=<username> flag MUST be set when running with sudo"
+        exit 1
+    fi
 
     local pkg_manager=""
     if [ -x "$(command -v apt)" ]; then pkg_manager="apt"

@@ -132,6 +132,7 @@ rule 'MD013', :ignore_code_blocks => true
 
 ## TODO
 
+* Add check for a snap package when apt install fails
 * Add hook / program to fail a tag if it is > "version" in `pyproject.toml`
   * `update_about`
 * Refine check_rust to use the `Makefile.toml` if it exists at top level of a repo
