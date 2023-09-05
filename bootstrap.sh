@@ -14,6 +14,7 @@ readonly PYTHON="python${PYTHON_VERSION}"
 
 # Don't make a dependency file because I want this script to be self-contained
 declare -a DEPENDECY_LIST=(
+    plantuml
     software-properties-common
     ruby
     gh
