@@ -29,7 +29,8 @@ function usage {
 $(basename "${0}"): Bootstraps the devops environment
 General: sudo ./$(basename "${0}") [Optional]
     This is how you should run the script unless you are installing JUST --no-sudo.
-Run Sudo Bootstrap: ./$(basename "${0}" --sudo-user=<username>
+Run Sudo Bootstrap: ./$(basename "${0}") --sudo-user=username
+
 Setup pre-commit: ./$(basename "${0}") --no-sudo
 
 Required Args:
