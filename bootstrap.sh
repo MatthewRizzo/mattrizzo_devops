@@ -23,6 +23,8 @@ declare -a DEPENDECY_LIST=(
     python${PYTHON_VERSION}
     keychain
     python3.10 # MUST be AFTER software-properties
+    python3.10-dev
+    python3.10-venv
 )
 
 function usage {
