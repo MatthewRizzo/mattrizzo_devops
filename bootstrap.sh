@@ -11,20 +11,41 @@ SUDO_USER=""
 
 readonly PYTHON_VERSION="3.10"
 readonly PYTHON="python${PYTHON_VERSION}"
+readonly SYSTEM_PYTHON="/usr/bin/$PYTHON"
+readonly SYSTEM_PIP="/usr/bin/pip3"
 
 # Don't make a dependency file because I want this script to be self-contained
-declare -a DEPENDECY_LIST=(
-    plantuml
-    software-properties-common
-    ruby
-    gh
-    gem
-    pre-commit=2.17.0-1
-    python${PYTHON_VERSION}
-    keychain
-    python3.10 # MUST be AFTER software-properties
-    python3.10-dev
-    python3.10-venv
+function install_system_packages(){
+    local -r pkg_manager="$1"
+
+    if [[ ${pkg_manager} == "" ]]; then
+        echo "No package manager provided!"
+        return 2
+    fi
+
+    # Note: python install MUST be AFTER software-properties
+    sudo $pkg_manager install \
+        plantuml \
+        software-properties-common \
+        ruby \
+        gem \
+        keychain \
+        python3.10 \
+        python3.10-dev \
+        python3.10-venv \
+        libspa-0.2-bluetooth \
+        pipewire \
+        pipewire-audio-client-libraries
+}
+
+function install_snap_packages() {
+    sudo snap install \
+        gh
+}
+
+declare -a PPA_LIST=(
+    deadsnakes/ppa
+    pipewire-debian/pipewire-upstream
 )
 
 function usage {
@@ -62,6 +83,24 @@ function check_if_sudo(){
     fi
 }
 
+# $1 = ppa to check for
+# return code:
+# * 1 if it is already added
+# * 0 if it is not added
+function check_if_ppa_added()
+{
+    local -r ppa_to_check="$1"
+
+    # Inspiration
+    # https://askubuntu.com/q/1191782
+    grep -h "^deb.*$ppa_to_check" /etc/apt/sources.list.d/* > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # There are packages / modules which MUST be installed at the user level
 # As this script is often also a sudoer for system level installs, this causes
 #   an issue.
@@ -80,6 +119,21 @@ function run_cmd_as_user(){
     ${RUN_PREFIX}="${command_to_run}"
 }
 
+# Learned later about this method and it is more reliable.
+# Don't have time to deprecate the old way (yet)
+# Going forward, use this method
+function run_cmd_as_user_v2() {
+    local -r actual_user="$1"
+    local -r command_to_run="$2"
+    local -r verbose="$3"
+
+    local -r cmd_prefix="sudo -u $actual_user"
+    echo "${command_to_run}"
+    if [[ ${verbose} == true ]]; then
+        echo "Full Command: ${cmd_prefix} ${command_to_run}"
+    fi
+    $cmd_prefix $command_to_run
+}
 
 # Packages versions according to the manager != --version
 # $1 = pkg_name
@@ -235,28 +289,42 @@ function install_poetry()
     fi
 }
 
+function install_python_packages() {
+    local -r actual_user="$1"
+
+    echo "Installing $SYSTEM_PYTHON pacakges"
+    run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install --upgrade pip" true
+    run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install \
+        virtualenv \
+        pre-commit==2.17.0 \
+    "
+    echo "Done install $SYSTEM_PYTHON packages"
+}
+
 # Some python packages must be installed via pip
 # $1 = sudo_allowed. true = sudoer. false = regular user.
-# $2 = user - the name of the actual user
+# $2 = actual_user - the name of the actual user 9regardless if sudo or not)
 function install_python_dep() {
     local -r sudo_allowed=$1
-    local -r user=$2
+    local -r actual_user=$2
     check_python_version ${sudo_allowed}
 
-    install_poetry ${sudo_allowed} ${user}
+    install_poetry ${sudo_allowed} ${actual_user}
 
-    local -r setup_poetry_config="poetry config --ansi virtualenvs.in-project true"
+    local -r setup_poetry_config="config --ansi virtualenvs.in-project true"
     if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "${PYTHON} -m ${setup_poetry_config}"
+        /home/${actual_user}/.local/bin/poetry ${setup_poetry_config}
         # Sudo shouldnt be adding to a user's path
         echo -e "\n-----------------------------------------"
         echo "Make sure to add poetry to the local path. "
         echo "Or rerun ./bootstrap --no-sudo"
         echo -e "-----------------------------------------\n"
     else
-        ${setup_poetry_config}
-        add_local_to_path ${user}
+        poetry ${setup_poetry_config}
+        add_local_to_path ${actual_user}
     fi
+
+    install_python_packages $actual_user
 }
 
 # Adding Rust (Cargo) to path is necessary for it to work
@@ -295,42 +363,62 @@ function install_rust_deps() {
     source "${HOME}/.cargo/env"
 }
 
+function add_ppas() {
+    # todo - check if ppa exists
+    for ppa in ${PPA_LIST[*]}; do
+
+        check_if_ppa_added
+        local is_added=$?
+        if [[ $is_added -eq 0 ]]; then
+            echo "Adding ppa $ppa"
+            sudo add-apt-repository ppa:$ppa --yes
+        fi
+    done
+}
+
+function install_packages() {
+    local -r package_manager="$1"
+    for package in ${DEPENDECY_LIST[*]}; do
+        echo "Installing $package"
+        sudo $package_manager install -y $package
+    done
+}
+
 # $1 = pkg_manager - the pkg manager of the system
 # $2 = sudo_allowed. true = sudoer. false = regular user.
 function check_dependencies() {
     local -r pkg_manager=$1
     local -r sudo_allowed=$2
+    local -r actual_user="$3"
     local -r dependencies_file="${REPO_TOP_DIR}/dependencies.txt"
     local -r dependencies=
 
 
     if [[ ${sudo_allowed} == true ]]; then
         check_if_sudo
-        sudo add-apt-repository ppa:deadsnakes/ppa --yes
-        sudo ${pkg_manager} install -y "${DEPENDECY_LIST[@]}"
+        # sudo add-apt-repository ppa:deadsnakes/ppa --yes
 
-        # Need Ruby package manager to get mdl - markdown linter
+        if [[ ${pkg_manager} == "apt" ]]; then
+            echo "Adding all ppa's"
+            add_ppas
+        fi
+
+        install_system_packages ${pkg_manager}
+        install_snap_packages
+        sudo apt update && sudo apt upgrade -y
+
+        Need Ruby package manager to get mdl - markdown linter
         install_mdl
     fi
 
-    local user=${USER}
-    if [[ ${sudo_allowed} == true ]]; then
-        user=${SUDO_USER}
-    fi
-
-    install_rust_deps ${user}
-    install_python_dep ${sudo_allowed} ${user}
+    install_rust_deps ${actual_user}
+    install_python_dep ${sudo_allowed} ${actual_user}
 }
 
-# $2 = sudo_allowed. true = sudoer. false = regular user.
+# $1 = actual user name (regardless if sudo or not)
 function create_venv() {
-    local -r sudo_allowed=$1
-    create_poetry_venv_cmd="poetry install"
-    if [[ ${sudo_allowed} == true ]]; then
-        run_cmd_as_user "${PYTHON} -m ${create_poetry_venv_cmd}"
-    else
-        ${create_poetry_venv_cmd}
-    fi
+    local -r actual_user="$1"
+    /home/${actual_user}/.local/bin/poetry install
 }
 
 # Args: all args from script entry = "$@"
@@ -366,9 +454,15 @@ function main() {
     ORIGINAL_USER=${SUDO_USER}
     RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
 
+
     if [[ $sudo_allowed == true && "$ORIGINAL_USER" == "" ]]; then
         echo "The --sudo-user=<username> flag MUST be set when running with sudo"
         exit 1
+    fi
+
+    local actual_user=${ORIGINAL_USER}
+    if [[ ${sudo_allowed} == true ]]; then
+        actual_user=${SUDO_USER}
     fi
 
     local pkg_manager=""
@@ -376,14 +470,14 @@ function main() {
     elif [ -x "$(command -v dnf)" ];     then pkg_manager="dnf"
     fi
 
-    check_dependencies ${pkg_manager} ${sudo_allowed}
+    check_dependencies ${pkg_manager} ${sudo_allowed} "$actual_user"
 
-    local -r bashrc_loc="$HOME/.bashrc"
-    if [[ -f ${bashrc_loc} ]]; then
-        source "${bashrc_loc}"
-    fi
+    # local -r bashrc_loc="$HOME/.bashrc"
+    # if [[ -f ${bashrc_loc} ]]; then
+    #     source "${bashrc_loc}"
+    # fi
 
-    create_venv ${sudo_allowed}
+    # create_venv "$actual_user"
 }
 
 main "$@"
