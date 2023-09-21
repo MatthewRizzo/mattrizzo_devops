@@ -35,7 +35,8 @@ function install_system_packages(){
         python3.10-venv \
         libspa-0.2-bluetooth \
         pipewire \
-        pipewire-audio-client-libraries
+        pipewire-audio-client-libraries \
+        mlocate
 }
 
 function install_snap_packages() {
@@ -372,6 +373,9 @@ function add_ppas() {
         if [[ $is_added -eq 0 ]]; then
             echo "Adding ppa $ppa"
             sudo add-apt-repository ppa:$ppa --yes
+            sudo add-apt-repository universe --yes
+            sudo add-apt-repository restricted --yes
+            sudo add-apt-repository multiverse --yes
         fi
     done
 }
