@@ -476,12 +476,6 @@ function main() {
 
     check_dependencies ${pkg_manager} ${sudo_allowed} "$actual_user"
 
-    # local -r bashrc_loc="$HOME/.bashrc"
-    # if [[ -f ${bashrc_loc} ]]; then
-    #     source "${bashrc_loc}"
-    # fi
-
-    # create_venv "$actual_user"
 }
 
 main "$@"
