@@ -39,7 +39,11 @@ function install_system_packages(){
         mlocate \
         pandoc \
         groff \
-        ghostscript
+        ghostscript \
+        texlive-latex-base \
+        texlive-fonts-recommended \
+        texlive-extra-utils \
+        texlive-latex-extra
 
 }
 
