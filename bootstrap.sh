@@ -24,7 +24,7 @@ function install_system_packages(){
     fi
 
     # Note: python install MUST be AFTER software-properties
-    sudo $pkg_manager install \
+    sudo $pkg_manager install -y \
         plantuml \
         software-properties-common \
         ruby \
@@ -36,7 +36,11 @@ function install_system_packages(){
         libspa-0.2-bluetooth \
         pipewire \
         pipewire-audio-client-libraries \
-        mlocate
+        mlocate \
+        pandoc \
+        groff \
+        ghostscript
+
 }
 
 function install_snap_packages() {
@@ -411,7 +415,7 @@ function check_dependencies() {
         install_snap_packages
         sudo apt update && sudo apt upgrade -y
 
-        Need Ruby package manager to get mdl - markdown linter
+        # Need Ruby package manager to get mdl - markdown linter
         install_mdl
     fi
 
