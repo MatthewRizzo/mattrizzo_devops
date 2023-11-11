@@ -45,6 +45,10 @@ function install_system_packages(){
         texlive-extra-utils \
         texlive-latex-extra
 
+    # per deprecation message:
+    # deprecate pipewire.
+    # Use WirePlumber instead of pipewire-media-session
+    # requires sudo add-apt-repository  ppa:pipewire-debian/wireplumber-upstream
 }
 
 function install_snap_packages() {
@@ -55,6 +59,13 @@ function install_snap_packages() {
 declare -a PPA_LIST=(
     deadsnakes/ppa
     pipewire-debian/pipewire-upstream
+    pipewire-debian/wireplumber-upstream
+)
+
+declare -a PPA_LIST_NO_PREFIX=(
+    universe
+    restricted
+    multiverse
 )
 
 function usage {
@@ -376,14 +387,22 @@ function add_ppas() {
     # todo - check if ppa exists
     for ppa in ${PPA_LIST[*]}; do
 
-        check_if_ppa_added
+        check_if_ppa_added "$ppa"
         local is_added=$?
         if [[ $is_added -eq 0 ]]; then
             echo "Adding ppa $ppa"
             sudo add-apt-repository ppa:$ppa --yes
-            sudo add-apt-repository universe --yes
-            sudo add-apt-repository restricted --yes
-            sudo add-apt-repository multiverse --yes
+        fi
+    done
+
+    # Add PPA's that do not take a ppa: prefix
+    for no_prefix_ppa in ${PPA_LIST_NO_PREFIX[*]}; do
+        check_if_ppa_added "$no_prefix_ppa"
+        local is_added=$?
+
+        if [[ $is_added -eq 0 ]]; then
+            echo "Adding ppa $ppa"
+            sudo add-apt-repository $no_prefix_ppa --yes
         fi
     done
 }
