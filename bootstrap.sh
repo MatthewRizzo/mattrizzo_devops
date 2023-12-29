@@ -44,7 +44,8 @@ function install_system_packages(){
         texlive-fonts-recommended \
         texlive-extra-utils \
         texlive-latex-extra \
-        latexmk
+        latexmk \
+        chktex \
 
     # per deprecation message:
     # deprecate pipewire.
