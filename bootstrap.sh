@@ -40,6 +40,7 @@ function install_system_packages(){
         pandoc \
         groff \
         ghostscript \
+        autorandr \
         texlive-latex-base \
         texlive-fonts-recommended \
         texlive-extra-utils \
