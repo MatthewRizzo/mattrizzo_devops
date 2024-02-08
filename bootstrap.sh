@@ -47,6 +47,7 @@ function install_system_packages(){
         texlive-latex-extra \
         latexmk \
         chktex \
+        xscreensaver
 
     # per deprecation message:
     # deprecate pipewire.
