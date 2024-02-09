@@ -47,7 +47,9 @@ function install_system_packages(){
         texlive-latex-extra \
         latexmk \
         chktex \
-        xscreensaver
+        xscreensaver \
+        bluetooth \
+        pulseaudio-module-bluetooth
 
     # per deprecation message:
     # deprecate pipewire.
