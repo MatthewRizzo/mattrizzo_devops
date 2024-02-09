@@ -48,8 +48,7 @@ function install_system_packages(){
         latexmk \
         chktex \
         xscreensaver \
-        bluetooth \
-        pulseaudio-module-bluetooth
+        bluetooth
 
     # per deprecation message:
     # deprecate pipewire.
