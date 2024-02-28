@@ -61,10 +61,12 @@ function install_snap_packages() {
         gh
 }
 
+# List is everything after ppa:
 declare -a PPA_LIST=(
     deadsnakes/ppa
     pipewire-debian/pipewire-upstream
     pipewire-debian/wireplumber-upstream
+    git-core/ppa
 )
 
 declare -a PPA_LIST_NO_PREFIX=(
@@ -389,7 +391,6 @@ function install_rust_deps() {
 }
 
 function add_ppas() {
-    # todo - check if ppa exists
     for ppa in ${PPA_LIST[*]}; do
 
         check_if_ppa_added "$ppa"
