@@ -48,7 +48,8 @@ function install_system_packages(){
         latexmk \
         chktex \
         xscreensaver \
-        bluetooth
+        bluetooth \
+	xclip
 
     # per deprecation message:
     # deprecate pipewire.
