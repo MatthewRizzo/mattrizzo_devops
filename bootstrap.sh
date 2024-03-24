@@ -49,7 +49,8 @@ function install_system_packages(){
         chktex \
         xscreensaver \
         bluetooth \
-	xclip
+        xclip \
+        pulseaudio-module-raop
 
     # per deprecation message:
     # deprecate pipewire.
