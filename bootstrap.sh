@@ -50,6 +50,7 @@ function install_system_packages(){
         xscreensaver \
         bluetooth \
         xclip \
+        pipewire-media-session \
         pulseaudio-module-raop
 
     # per deprecation message:
