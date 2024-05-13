@@ -59,6 +59,17 @@ function install_system_packages(){
     # requires sudo add-apt-repository  ppa:pipewire-debian/wireplumber-upstream
 }
 
+function install_code()
+{
+    if ! command -v code &> /dev/null; then
+        echo "Installing Code"
+        sudo apt install software-properties-common apt-transport-https wget -y
+        wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+        sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+        sudo apt install code
+    fi
+}
+
 function install_snap_packages() {
     sudo snap install \
         gh
@@ -441,6 +452,7 @@ function check_dependencies() {
         if [[ ${pkg_manager} == "apt" ]]; then
             echo "Adding all ppa's"
             add_ppas
+            install_code
         fi
 
         install_system_packages ${pkg_manager}
