@@ -30,6 +30,7 @@ function install_system_packages(){
         ruby \
         gem \
         keychain \
+        python3-pip \
         python3.10 \
         python3.10-dev \
         python3.10-venv \
