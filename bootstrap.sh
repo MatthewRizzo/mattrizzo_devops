@@ -52,7 +52,8 @@ function install_system_packages(){
         bluetooth \
         xclip \
         pipewire-media-session \
-        pulseaudio-module-raop
+        pulseaudio-module-raop \
+        jq
 
     # per deprecation message:
     # deprecate pipewire.
