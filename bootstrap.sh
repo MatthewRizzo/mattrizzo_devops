@@ -77,6 +77,16 @@ function install_snap_packages() {
         gh
 }
 
+# Function that does the curl + source list addition for debian repos
+function configure_debian_repositories()
+{
+    # Spotify install - https://www.spotify.com/de-en/download/linux/
+    curl -sS https://download.spotify.com/debian/pubkey_6224F9941A8AA6D1.gpg\
+        | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
+    echo "deb http://repository.spotify.com stable non-free"\
+        | sudo tee /etc/apt/sources.list.d/spotify.list
+}
+
 # List is everything after ppa:
 declare -a PPA_LIST=(
     deadsnakes/ppa
@@ -437,6 +447,21 @@ function install_packages() {
     done
 }
 
+# Brief:
+#   In some cases, a ppa or repo needs to be setup, followed by update/upgrade
+#   and THEN the install of the intended package.
+#   Use this function for that to prevent duplicate updating.
+# Params:
+#   $1 - pkg_manager -> some packages only get installed on certain systems
+function post_update_installs()
+{
+    local -r pkg_manager="$1"
+
+    if [[ ${pkg_manager} == "apt" ]]; then
+        sudo apt install spotify-client
+    fi
+}
+
 # $1 = pkg_manager - the pkg manager of the system
 # $2 = sudo_allowed. true = sudoer. false = regular user.
 function check_dependencies() {
@@ -454,12 +479,15 @@ function check_dependencies() {
         if [[ ${pkg_manager} == "apt" ]]; then
             echo "Adding all ppa's"
             add_ppas
+            configure_debian_repositories
             install_code
         fi
 
         install_system_packages ${pkg_manager}
         install_snap_packages
         sudo apt update && sudo apt upgrade -y
+
+        post_update_installs "${pkg_manager}"
 
         # Need Ruby package manager to get mdl - markdown linter
         install_mdl
