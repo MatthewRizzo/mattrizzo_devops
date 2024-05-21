@@ -85,6 +85,10 @@ function configure_debian_repositories()
         | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
     echo "deb http://repository.spotify.com stable non-free"\
         | sudo tee /etc/apt/sources.list.d/spotify.list
+
+    # Vysor install - https://www.vysor.io/download/linux
+    echo 'deb [arch=amd64, trusted=yes] https://nuts.vysor.io/apt ./'\
+        | sudo tee /etc/apt/sources.list.d/vysor.list
 }
 
 # List is everything after ppa:
@@ -458,7 +462,9 @@ function post_update_installs()
     local -r pkg_manager="$1"
 
     if [[ ${pkg_manager} == "apt" ]]; then
-        sudo apt install spotify-client
+        sudo apt install \
+            spotify-client \
+            vysor
     fi
 }
 
