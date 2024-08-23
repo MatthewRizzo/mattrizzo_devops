@@ -53,7 +53,8 @@ function install_system_packages(){
         xclip \
         pipewire-media-session \
         pulseaudio-module-raop \
-        jq
+        jq \
+        figlet
 
     # per deprecation message:
     # deprecate pipewire.
