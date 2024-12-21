@@ -54,7 +54,8 @@ function install_system_packages(){
         pipewire-media-session \
         pulseaudio-module-raop \
         jq \
-        figlet
+        figlet \
+        terminus
 
     # per deprecation message:
     # deprecate pipewire.
