@@ -55,7 +55,8 @@ function install_system_packages(){
         pulseaudio-module-raop \
         jq \
         figlet \
-        terminus
+        terminus \
+        pre-commit
 }
 
 function install_code()
@@ -105,13 +106,13 @@ General: sudo ./$(basename "${0}") [Optional]
     This is how you should run the script unless you are installing JUST --no-sudo.
 Run Sudo Bootstrap: ./$(basename "${0}") --sudo-user=username
 
-Setup pre-commit: ./$(basename "${0}") --no-sudo
+Setup non-sudo requiring actions: ./$(basename "${0}") --no-sudo
 
 Required Args:
     None
 Optional Args:
     --sudo-user: REQUIRED IF SUDO. This is the name of the user ELEVATED to sudo.
-    --no-sudo: Set this flag if you are setting up pre-commit.
+    --no-sudo: Set this flag if you are taking actions not related to system packages.
         You are guaranteeing NO command requiring sudo will be executed.
     -h | --help: Print this message
 EOF
@@ -344,9 +345,6 @@ function install_python_packages() {
 
     echo "Installing $SYSTEM_PYTHON pacakges"
     run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install --upgrade pip" true
-    run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install \
-        pre-commit==2.17.0 \
-    "
     echo "Done install $SYSTEM_PYTHON packages"
 }
 
