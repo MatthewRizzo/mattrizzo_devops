@@ -389,7 +389,7 @@ function install_python_dep() {
         # Sudo shouldnt be adding to a user's path
         echo -e "\n-----------------------------------------"
         echo "Make sure to add poetry to the local path. "
-        echo "Or rerun ./bootstrap --no-sudo"
+        echo "Or rerun ./bootstrap.sh --no-sudo"
         echo -e "-----------------------------------------\n"
     else
         poetry ${setup_poetry_config}
