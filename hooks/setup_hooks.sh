@@ -85,12 +85,22 @@ function run_bootstrap() {
 
     # Run with no-sudo to make sure sudo will NEVER be required for a command
     # Prevents weird control flow for end-users when cloning a respository
-    curl -sSL ${url} -o ${file_path}
-    bash ${file_path} --no-sudo
+    echo "Downloading and running bootstrap script from ${url} to ${file_path}"
+    curl -sSL "${url}" -o "${file_path}"
+
+    # default to success
+    setup_res_code=0
+    if ! bash ${file_path} --no-sudo; then
+        echo "Bootstrap script failed! Setup Failed!"
+        setup_res_code=1
+    fi
+
     if [[ -e ${file_path} ]]; then
+        echo "Removing bootstrap script at ${file_path}"
         rm ${file_path}
     fi
 
+    return ${setup_res_code}
 
 }
 
