@@ -356,14 +356,6 @@ function install_poetry()
     fi
 }
 
-function install_python_packages() {
-    local -r actual_user="$1"
-
-    echo "Installing $SYSTEM_PYTHON pacakges"
-    run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install --upgrade pip" true
-    echo "Done install $SYSTEM_PYTHON packages"
-}
-
 # Some python packages must be installed via pip
 # $1 = sudo_allowed. true = sudoer. false = regular user.
 # $2 = actual_user - the name of the actual user 9regardless if sudo or not)
@@ -386,8 +378,6 @@ function install_python_dep() {
         poetry ${setup_poetry_config}
         add_local_to_path ${actual_user}
     fi
-
-    install_python_packages $actual_user
 }
 
 # Adding Rust (Cargo) to path is necessary for it to work
