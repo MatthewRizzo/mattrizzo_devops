@@ -86,12 +86,14 @@ function configure_debian_repositories()
         | sudo tee /etc/apt/sources.list.d/spotify.list
 }
 
-# List is everything after ppa:
+# The list uses works to key off of in /etc/apt/sources.list.d/ when searching for ppa's.
+# As distro's change the exact ppa name over time, please wild card around these names.
+# And the slashes are converted to '-'
 declare -a PPA_LIST=(
-    deadsnakes/ppa
+    deadsnakes
     pipewire-debian/pipewire-upstream
     pipewire-debian/wireplumber-upstream
-    git-core/ppa
+    git-core
 )
 
 declare -a PPA_LIST_NO_PREFIX=(
@@ -144,12 +146,23 @@ function check_if_sudo(){
 # * 0 if it is not added
 function check_if_ppa_added()
 {
+
     local -r ppa_to_check="$1"
+    # The PPA might have '/' in it, which is converted to '-' in the source list file names.
+    # Replace the slashes with dashes for the check.
+    # Usually it is difficult to predict how the slash converts to as a file.
+    # For example pipewire-debian/wireplumber-upstream becomes pipewire-debian-ubuntu-wireplumber-upstream-noble.sources
+    # As such we just check for the part after the slash 'wireplumber-upstream'
+    local -r ppa_to_check_remove_pre_slash="${ppa_to_check##*/}"
 
     # Inspiration
     # https://askubuntu.com/q/1191782
-    grep -h "^deb.*$ppa_to_check" /etc/apt/sources.list.d/* > /dev/null 2>&1
+    # Use wildcards around the ppa name in case there is not an exact match
+    echo "Checking for ppa ${ppa_to_check} as *${ppa_to_check_remove_pre_slash}*"
+    # /etc/apt/sources.list moved to /etc/apt/sources.list.d/ubuntu.sources in newer ubuntu versions
+    grep -h -E "*${ppa_to_check_remove_pre_slash}*" /etc/apt/sources.list.d/* /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null | grep -i "${ppa_to_check_dash}" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
+        echo "PPA $ppa_to_check not found"
         return 0
     else
         return 1
