@@ -51,16 +51,11 @@ function install_system_packages(){
         xscreensaver \
         bluetooth \
         xclip \
-        pipewire-media-session \
+        wireplumber \
         pulseaudio-module-raop \
         jq \
         figlet \
         terminus
-
-    # per deprecation message:
-    # deprecate pipewire.
-    # Use WirePlumber instead of pipewire-media-session
-    # requires sudo add-apt-repository  ppa:pipewire-debian/wireplumber-upstream
 }
 
 function install_code()
