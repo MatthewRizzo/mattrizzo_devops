@@ -363,6 +363,10 @@ function install_python_dep() {
     local -r sudo_allowed=$1
     local -r actual_user=$2
     check_python_version ${sudo_allowed}
+    if ! check_if_pip_installed; then
+        echo "pip3 and other python necessities not installed! Please run sudo ./bootstrap.sh --sudo-user=<your username>"
+        return 1
+    fi
 
     install_poetry ${sudo_allowed} ${actual_user}
 
@@ -396,7 +400,13 @@ END_HEREDOC
 if ! grep -q -w ".cargo/env" /home/$user/.bashrc; then
     echo "Adding cargo to path"
     echo "$cmd_to_print" >> /home/${user}/.bashrc
+    res=$?
+    if [[ $res -ne 0 ]]; then
+        echo "Failed to add cargo to path!"
+        return 1
+    fi
 fi
+    return 0
 }
 
 # $1 = user
@@ -410,10 +420,17 @@ function install_rust_deps() {
         # https://doc.rust-lang.org/cargo/getting-started/installation.html
         local -r rustup_url="https://sh.rustup.rs"
         echo "Installing Rust ${rustup_url}"
-        curl ${rustup_url} -sSf | sh -s -- -y
+        if ! curl ${rustup_url} -sSf | sh -s -- -y; then
+            echo "Rust install failed!"
+            return 1
+        fi
     fi
-    add_rust_to_path ${user}
+    if ! add_rust_to_path ${user}; then
+        echo "Failed to add rust to path!"
+        return 2
+    fi
     source "${HOME}/.cargo/env"
+    return 0
 }
 
 function add_ppas() {
@@ -423,7 +440,10 @@ function add_ppas() {
         local is_added=$?
         if [[ $is_added -eq 0 ]]; then
             echo "Adding ppa $ppa"
-            sudo add-apt-repository ppa:$ppa --yes
+            if ! sudo add-apt-repository ppa:$ppa --yes; then
+                echo "Failed to add ppa $ppa"
+                return 1
+            fi
         fi
     done
 
@@ -434,9 +454,14 @@ function add_ppas() {
 
         if [[ $is_added -eq 0 ]]; then
             echo "Adding ppa $ppa"
-            sudo add-apt-repository $no_prefix_ppa --yes
+            if ! sudo add-apt-repository $no_prefix_ppa --yes; then
+                echo "Failed to add ppa $no_prefix_ppa"
+                return 1
+            fi
         fi
     done
+
+    return 0
 }
 
 function install_packages() {
@@ -470,8 +495,16 @@ function check_dependencies() {
     local -r sudo_allowed=$2
     local -r actual_user="$3"
     local -r dependencies_file="${REPO_TOP_DIR}/dependencies.txt"
-    local -r dependencies=
 
+    echo "Checking dependencies"
+
+    if [[ "$pkg_manager" == "" ]]; then
+        echo "No supported package manager found!"
+        return 2
+    elif [[ "$actual_user" == "" ]]; then
+        echo "No user provided to check_dependencies"
+        return 3
+    fi
 
     if [[ ${sudo_allowed} == true ]]; then
         check_if_sudo
@@ -494,8 +527,14 @@ function check_dependencies() {
         install_mdl
     fi
 
-    install_rust_deps ${actual_user}
-    install_python_dep ${sudo_allowed} ${actual_user}
+    if ! install_rust_deps ${actual_user}; then
+        echo "Rust install failed!"
+        return 4
+    fi
+    if ! install_python_dep ${sudo_allowed} ${actual_user}; then
+        echo "Python install failed!"
+        return 5
+    fi
 }
 
 # $1 = actual user name (regardless if sudo or not)
@@ -552,6 +591,13 @@ function main() {
     local actual_user=${ORIGINAL_USER}
     if [[ ${sudo_allowed} == true ]]; then
         actual_user=${SUDO_USER}
+    else
+        actual_user="$(whoami)"
+    fi
+
+    if [[ "$actual_user" == "" ]]; then
+        echo "We could not determine who the actual user is! Setup Failed!"
+        return 2
     fi
 
     local pkg_manager=""
