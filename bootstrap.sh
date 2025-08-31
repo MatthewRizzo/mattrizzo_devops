@@ -37,7 +37,6 @@ function install_system_packages(){
         libspa-0.2-bluetooth \
         pipewire \
         pipewire-audio-client-libraries \
-        mlocate \
         pandoc \
         groff \
         ghostscript \
