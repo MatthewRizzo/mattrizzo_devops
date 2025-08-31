@@ -34,6 +34,7 @@ function install_system_packages(){
         python3.10 \
         python3.10-dev \
         python3.10-venv \
+        python3-virtualenv \
         libspa-0.2-bluetooth \
         pipewire \
         pipewire-audio-client-libraries \
@@ -344,7 +345,6 @@ function install_python_packages() {
     echo "Installing $SYSTEM_PYTHON pacakges"
     run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install --upgrade pip" true
     run_cmd_as_user_v2 $actual_user "$SYSTEM_PIP install \
-        virtualenv \
         pre-commit==2.17.0 \
     "
     echo "Done install $SYSTEM_PYTHON packages"
