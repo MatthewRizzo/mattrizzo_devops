@@ -8,6 +8,7 @@ readonly REPO_TOP_DIR="$(realpath ${SCRIPT_DIR_PATH})"
 # Set in main
 RUN_PREFIX=""
 SUDO_USER=""
+ONLY_INSTALL_SYSTEM_PACKAGES=false
 
 readonly PYTHON_VERSION="3.10"
 readonly PYTHON="python${PYTHON_VERSION}"
@@ -114,6 +115,9 @@ Optional Args:
     --sudo-user: REQUIRED IF SUDO. This is the name of the user ELEVATED to sudo.
     --no-sudo: Set this flag if you are taking actions not related to system packages.
         You are guaranteeing NO command requiring sudo will be executed.
+    --only-system-packages: Installs only system packages.
+        Does not install packages within python, rust, or any other dependencies.
+        Should be run with sudo and the --sudo-user flag.
     -h | --help: Print this message
 EOF
 }
@@ -266,12 +270,24 @@ function check_python_version(){
     install_python ${sudo_allowed}
 }
 
+function check_if_pip_installed() {
+    if ! command -v pip3 &> /dev/null; then
+        echo "pip3 not installed"
+        return 1
+    fi
+    return 0
+}
+
 # Adding pip and poetry to path is necessary for it to work
 # Check if the path is already added, if not, add an source for it in
 # ~/.bashrc
 # $1 = user
 function add_local_to_path() {
     local -r user=$1
+    if [[ "$user" == "" ]]; then
+        echo "No user provided to add_local_to_path"
+        return 1
+    fi
     local -r path_to_add="/home/${user}/.local/bin/"
 local -r cmd_to_print=$(cat <<END_HEREDOC
 
@@ -518,6 +534,9 @@ function main() {
                 SUDO_USER="${arg#*=}"
                 shift
                 ;;
+            "--only-system-packages" )
+                ONLY_INSTALL_SYSTEM_PACKAGES=true
+                ;;
             * )
                 echo -e >&2 "Unexpected argument: ${arg}\n";
                 usage
@@ -531,6 +550,9 @@ function main() {
     ORIGINAL_USER=${SUDO_USER}
     RUN_PREFIX="sudo runuser ${ORIGINAL_USER} --command"
 
+    if [[ ${ONLY_INSTALL_SYSTEM_PACKAGES} == true ]]; then
+        sudo_allowed=true
+    fi
 
     if [[ $sudo_allowed == true && "$ORIGINAL_USER" == "" ]]; then
         echo "The --sudo-user=<username> flag MUST be set when running with sudo"
@@ -545,6 +567,22 @@ function main() {
     local pkg_manager=""
     if [ -x "$(command -v apt)" ]; then pkg_manager="apt"
     elif [ -x "$(command -v dnf)" ];     then pkg_manager="dnf"
+    fi
+
+    if [[ "$pkg_manager" == "" ]]; then
+        echo "No supported package manager found!"
+        return 3
+    fi
+
+    if [[ ${sudo_allowed} == false && ${ONLY_INSTALL_SYSTEM_PACKAGES} == true ]]; then
+        echo "To install system packages, the script MUST be run with sudo! Use the "
+        return 1
+    elif [[ $ONLY_INSTALL_SYSTEM_PACKAGES == true ]]; then
+        echo "Installing only system packages"
+        if ! install_system_packages ${pkg_manager}; then
+            echo "Failed to install system packages!"
+            return 4
+        fi
     fi
 
     check_dependencies ${pkg_manager} ${sudo_allowed} "$actual_user"
