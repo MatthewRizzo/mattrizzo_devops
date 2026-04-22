@@ -57,7 +57,9 @@ function install_system_packages(){
         jq \
         figlet \
         terminus \
-        pre-commit
+        pre-commit \
+        carla \
+        pipewire-audio-client-libraries
 }
 
 function install_code()
